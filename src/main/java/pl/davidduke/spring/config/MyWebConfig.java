@@ -5,6 +5,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -13,18 +15,21 @@ import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring6.view.ThymeleafViewResolver;
 
 import javax.sql.DataSource;
-import java.sql.DriverManager;
+import java.util.Objects;
 
 @Configuration
 @EnableWebMvc
 @ComponentScan("pl.davidduke.spring")
+@PropertySource("classpath:database.properties")
 public class MyWebConfig {
 
     private final ApplicationContext applicationContext;
+    private final Environment environment;
 
     @Autowired
-    public MyWebConfig(ApplicationContext applicationContext) {
+    public MyWebConfig(ApplicationContext applicationContext, Environment environment) {
         this.applicationContext = applicationContext;
+        this.environment = environment;
     }
 
     @Bean
@@ -56,10 +61,10 @@ public class MyWebConfig {
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
 
-        dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUrl("jdbc:postgresql://localhost:5432/first_db");
-        dataSource.setUsername("postgres");
-        dataSource.setPassword("admin");
+        dataSource.setDriverClassName(Objects.requireNonNull(environment.getProperty("driver")));
+        dataSource.setUrl(environment.getProperty("url"));
+        dataSource.setUsername(environment.getProperty("dbname"));
+        dataSource.setPassword(environment.getProperty("password"));
 
         return dataSource;
     }
